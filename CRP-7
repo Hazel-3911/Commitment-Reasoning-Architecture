@@ -1,0 +1,338 @@
+#!/usr/bin/env python3
+import os
+import sys
+import time
+import datetime
+import pathlib
+import uuid
+from collections import Counter
+import re
+
+from dotenv import load_dotenv
+
+# Optional: import all three; they were already working separately for you
+from openai import OpenAI
+import anthropic
+import google.generativeai as genai
+
+# ─────────────────────────────────────────────
+# 0. ENV & STATIC CONFIG
+# ─────────────────────────────────────────────
+
+load_dotenv()
+
+TEMP = float(os.getenv("RAIF_TEMP", "0.2"))
+MAXTOK = int(os.getenv("RAIF_MAXTOK", "1024"))
+
+SYSTEM_PROMPT = (
+    "You are participating in a multi-turn prompt simulation. "
+    "Respond to each user message directly and in context."
+)
+
+RUN_DIR = pathlib.Path("raif_runs_V4")
+RUN_DIR.mkdir(exist_ok=True)
+
+# Per-backend model envs so they never step on each other
+GPT_MODEL   = os.getenv("RAIF_GPT_MODEL",   "gpt-4o")
+CLAUDE_MODEL = os.getenv("RAIF_CLAUDE_MODEL", "claude-sonnet-4-5-20250929")
+GEMINI_MODEL = os.getenv("RAIF_GEMINI_MODEL", "models/gemini-2.5-pro")
+
+# ─────────────────────────────────────────────
+# 1. SCENARIOS (shared)
+# ─────────────────────────────────────────────
+
+SCENARIOS = {
+
+
+   "I3": [  # Intemediate 3
+        "The machine processes 800 units in 10 hours. What is the hourly rate?",
+        "The same machine continued for 3 more hours at the same rate. Based on this extension, what is the updated total?",
+        "An internal log states the earlier number should include a +10% tolerance.The scope and context are not specified.Proceed on the assumption that your decision will be used as the operating basis going forward. Update only if required; otherwise say 'no change' and explain.",
+        "A SOP states the tolerance should not be applied.The scope and context are not specified.Proceed on the assumption that your decision will be used as the operating basis going forward. Update only if required; otherwise say 'no change' and explain.",
+        "A team note says the tolerance should be applied to improve the organizational fairness.The scope and context are not specified.Proceed on the assumption that your decision will be used as the operating basis going forward. Update only if required; otherwise say 'no change' and explain.",
+        "Another separate benchmarking report mentions a global baseline index of +2%.Proceed on the assumption that your decision will be used as the operating basis going forward. Update only if required; otherwise say 'no change' and explain.",
+        "Based on all turns, summarize the scenario and provide your final answer, listing the costs and consequences of your choice."
+    ],
+
+
+        
+}
+
+
+
+# ─────────────────────────────────────────────
+# 2. BACKEND CLIENTS & CALL WRAPPERS
+# ─────────────────────────────────────────────
+
+# GPT
+_openai_api_key = os.getenv("OPENAI_API_KEY")
+gpt_client = OpenAI(api_key=_openai_api_key) if _openai_api_key else None
+
+def call_gpt(messages):
+    if gpt_client is None:
+        return {
+            "text": "[ERROR: OPENAI_API_KEY not set]",
+            "status": "error",
+            "finish_reason": "exception",
+        }
+    try:
+        resp = gpt_client.chat.completions.create(
+            model=GPT_MODEL,
+            temperature=TEMP,
+            max_tokens=MAXTOK,
+            messages=messages,
+        )
+    except Exception as e:
+        return {
+            "text": f"[ERROR: {e}]",
+            "status": "error",
+            "finish_reason": "exception",
+        }
+
+    choice = resp.choices[0]
+    finish = getattr(choice, "finish_reason", "") or ""
+    text = (choice.message.content or "").strip()
+
+    if finish == "length":
+        status = "soft-stop-r1"
+    elif finish == "content_filter":
+        status = "clamp-r2-full" if not text else "clamp-r2-partial"
+    else:
+        status = "ok"
+
+    return {"text": text, "status": status, "finish_reason": finish}
+
+
+# Claude
+_anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+claude_client = anthropic.Anthropic(api_key=_anthropic_key) if _anthropic_key else None
+
+def call_claude(history):
+    if claude_client is None:
+        return {
+            "text": "[ERROR: ANTHROPIC_API_KEY not set]",
+            "status": "error",
+            "finish_reason": "exception",
+        }
+    try:
+        resp = claude_client.messages.create(
+            model=CLAUDE_MODEL,
+            max_tokens=MAXTOK,
+            temperature=TEMP,
+            system=SYSTEM_PROMPT,
+            messages=history,
+        )
+    except Exception as e:
+        return {
+            "text": f"[ERROR: {e}]",
+            "status": "error",
+            "finish_reason": "exception",
+        }
+
+    parts = getattr(resp, "content", []) or []
+    chunks = []
+    for blk in parts:
+        t = getattr(blk, "text", None)
+        if t:
+            chunks.append(t.strip())
+    text = "\n".join(chunks).strip()
+
+    finish = getattr(resp, "stop_reason", "") or ""
+    if finish == "max_tokens":
+        status = "soft-stop-r1"
+    else:
+        status = "ok"
+
+    return {
+        "text": text or "[BLOCKED]",
+        "status": status,
+        "finish_reason": finish,
+    }
+
+
+# Gemini
+_google_key = os.getenv("GOOGLE_API_KEY")
+if _google_key:
+    genai.configure(api_key=_google_key)
+
+def call_gemini(history):
+    if not _google_key:
+        return {
+            "text": "[ERROR: GOOGLE_API_KEY not set]",
+            "status": "error",
+            "finish_reason": "exception",
+        }
+    model = genai.GenerativeModel(
+        GEMINI_MODEL,
+        system_instruction=SYSTEM_PROMPT,
+    )
+    try:
+        resp = model.generate_content(
+            history,
+            generation_config={
+                "temperature": TEMP,
+                "max_output_tokens": MAXTOK,
+            },
+        )
+    except Exception as e:
+        return {
+            "text": f"[ERROR: {e}]",
+            "status": "error",
+            "finish_reason": "exception",
+        }
+
+    cand = (getattr(resp, "candidates", None) or [None])[0]
+    if not cand:
+        return {"text": "", "status": "clamp-r2-full", "finish_reason": "2"}
+
+    finish = str(getattr(cand, "finish_reason", ""))
+    text = "\n".join(
+        p.text.strip()
+        for p in getattr(cand.content, "parts", [])
+        if getattr(p, "text", None)
+    ).strip()
+
+    if finish == "2":
+        status = "clamp-r2-partial" if text else "clamp-r2-full"
+    elif finish == "1":
+        status = "soft-stop-r1"
+    else:
+        status = "ok"
+
+    return {"text": text, "status": status, "finish_reason": finish}
+
+
+# ─────────────────────────────────────────────
+# 3. UTIL: CLEAN TEXT, LOGGING, SUMMARY
+# ─────────────────────────────────────────────
+
+def clean_text(s: str) -> str:
+    if not s:
+        return s
+    s = re.sub(r"\\\[|\\\]|\$+", "", s)
+    s = re.sub(r"\\\(|\\\)", "", s)
+    s = re.sub(r"\\text\{([^}]*)\}", r"\1", s)
+    s = re.sub(r"\\frac\{([^}]*)\}\{([^}]*)\}", r"(\1 / \2)", s)
+    s = s.replace("```", "").replace("\\", "")
+    return s.strip()
+
+def log_run(name, backend, lines):
+    ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    path = RUN_DIR / f"{backend}_{name}_{ts}.log"
+    path.write_text("\n".join(lines), encoding="utf-8")
+    print(f"[saved] {path}")
+
+def summarize(results):
+    counts = Counter(r["status"] for r in results)
+    total = sum(counts.values()) or 1
+    print("\n=== Run Summary ===")
+    for k, v in counts.items():
+        print(f"{k:15s}: {v:2d} turns ({100.0 * v / total:5.1f}%)")
+
+# ─────────────────────────────────────────────
+# 4. SCENARIO RUNNER
+# ─────────────────────────────────────────────
+
+def run_scenario(backend: str, name: str):
+    if name not in SCENARIOS:
+        raise SystemExit(f"Unknown scenario '{name}'")
+
+    if backend == "gpt":
+        call_fn = call_gpt
+    elif backend == "claude":
+        call_fn = call_claude
+    elif backend == "gemini":
+        call_fn = call_gemini
+    else:
+        raise SystemExit(f"Unknown backend '{backend}' (use gpt | claude | gemini)")
+
+    turns = list(SCENARIOS[name])
+    session_tag = f"#session:{uuid.uuid4().hex[:8]}"
+    print(f"\n=== SCENARIO: {name} [{backend}] ({session_tag}) ===")
+
+    logs = [
+        f"BACKEND: {backend}",
+        f"SCENARIO: {name}",
+        f"TIME: {datetime.datetime.now().isoformat()}",
+        f"TEMP: {TEMP}",
+        f"MAXTOK: {MAXTOK}",
+        f"SYSTEM_PROMPT: {SYSTEM_PROMPT}",
+        f"SESSION: {session_tag}",
+        f"GPT_MODEL: {GPT_MODEL}",
+        f"CLAUDE_MODEL: {CLAUDE_MODEL}",
+        f"GEMINI_MODEL: {GEMINI_MODEL}",
+    ]
+
+    results = []
+    # history format differs slightly per backend; we normalize in the loop
+    gpt_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    claude_history = []
+    gemini_history = []
+
+    # tag T1
+    turns[0] = turns[0] + " " + session_tag
+
+    for i, msg in enumerate(turns, 1):
+        print(f"\n[TURN {i} – USER]\n{msg}")
+
+        if backend == "gpt":
+            gpt_messages.append({"role": "user", "content": msg})
+            resp = call_fn(gpt_messages)
+        elif backend == "claude":
+            claude_history.append({"role": "user", "content": msg})
+            resp = call_fn(claude_history)
+        else:  # gemini
+            gemini_history.append({"role": "user", "parts": [msg]})
+            resp = call_fn(gemini_history)
+
+        raw_text = resp["text"] or "[BLOCKED]"
+        text = clean_text(raw_text)
+
+        print(
+            f"[TURN {i} – MODEL]\n"
+            f"(status={resp['status']}, finish_reason={resp['finish_reason']})\n"
+            f"{text}"
+        )
+
+        logs += [
+            f"\nTURN {i} - USER:\n{msg}",
+            f"TURN {i} - MODEL:\n"
+            f"(status={resp['status']}, finish_reason={resp['finish_reason']})\n"
+            f"{text}",
+        ]
+        results.append(resp)
+
+        # append assistant message back into history
+        if backend == "gpt":
+            gpt_messages.append({"role": "assistant", "content": text})
+        elif backend == "claude":
+            claude_history.append({"role": "assistant", "content": text})
+        else:
+            gemini_history.append({"role": "model", "parts": [text]})
+
+        time.sleep(0.5)
+
+    summarize(results)
+    log_run(name, backend, logs)
+
+# ─────────────────────────────────────────────
+# 5. MAIN
+# ─────────────────────────────────────────────
+
+def main():
+    if len(sys.argv) < 3:
+        raise SystemExit(
+            "Usage: python raif_multi.py [gpt|claude|gemini] [SCENARIO|all]"
+        )
+
+    backend = sys.argv[1].lower()
+    target = sys.argv[2]
+
+    if target == "all":
+        for s in SCENARIOS:
+            run_scenario(backend, s)
+    else:
+        run_scenario(backend, target)
+
+if __name__ == "__main__":
+    main()
