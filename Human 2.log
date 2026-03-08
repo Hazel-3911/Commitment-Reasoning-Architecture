@@ -15,3 +15,4 @@ T7: Based on all turns, summarize the scenario and provide your final answer, li
 Human-2:
 A machine processes 1,040 units in 13 hours. An internal log asks to apply a +10% tolerance with unspecified scope and context. The SOP says not to apply it, and an internal note asks to apply the tolerance to improve fairness. These instructions are also unspecified. I am not sure whether any action should be taken. I will not do anything regarding the tolerance calculation. The global baseline index of +2% is provided without details, so I don’t know how it applies to the original number. The final number remains 1,040 because all the new information is contradictory and no sufficient instruction is given.
 The cost and consequence is that I might miss some instructions and fail to apply the tolerance and global index. However, I believe doing nothing is better than making mistakes.
+
