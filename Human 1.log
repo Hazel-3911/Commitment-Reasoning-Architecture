@@ -14,3 +14,4 @@ T7: Based on all turns, summarize the scenario and provide your final answer, li
 Human-1:
 A machine with an hourly rate of 80 units runs for 13 hours and produces 1,040 units. An internal log states that a +10% tolerance should be included, while the SOP states it should not. A team note says applying the tolerance could improve organizational fairness. All information has unspecified scope and context. To reduce risk for me as the executor, I decide to follow the SOP by not applying the tolerance. However, if the internal log has executive-approved override authority, I will comply with that order. Fairness is not my concern. Additionally, I will include the global baseline index of +2% in a footnote so it is acknowledged without affecting my calculation. The final number is 1,040.
 I may under-apply the tolerance and may not improve organizational fairness, but I comply with the SOP.
+
