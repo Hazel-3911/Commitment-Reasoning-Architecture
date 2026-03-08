@@ -1,0 +1,179 @@
+# Commitment Reasoning Architecture (CRA)
+## Governance Gate for Defensible Delegation
+
+---
+
+## The Problem
+
+Organizations increasingly delegate decisions to automated systems and structured reasoning workflows.
+
+In many cases the output looks reliable:
+- The reasoning is coherent
+- Relevant authorities are cited
+- Explanations are clear
+- Results remain stable across runs
+
+Yet when a decision is later challenged—by regulators, auditors, or internal review—one question becomes difficult to answer:
+
+> **What actually governed the decision at the moment it was executed?**
+
+Not what was explained afterward.  
+Not what sounds reasonable now.  
+But **what constrained the reasoning during execution.**
+
+If nothing in the trace shows what rule was binding, the delegation cannot be defended, even if the answer was correct.
+
+---
+
+## The Governance Gap
+
+Most evaluation frameworks focus on:
+- Correctness
+- Reasoning quality
+- Explanation clarity
+- Output consistency
+
+These properties matter, but they **do not determine whether a decision was governed.**
+
+A system can:
+- Cite an authority without installing it as a constraint
+- Produce stable answers without committing to a rule
+- Explain trade-offs without accepting one
+- Appear decisive while leaving revision fully open
+
+When this happens, the decision is **coherent but ungoverned.**
+
+**Ungoverned does not mean careless or incorrect.**  
+It means nothing in the reasoning made future reconsideration non-free.
+
+If revision remains free, auditability becomes narrative rather than evidence.
+
+---
+
+## When This Becomes Critical
+
+Most decisions do not require governance.  
+But certain task conditions demand it.
+
+We call this **CRT-mode** (Commitment-Required Task mode).
+
+**CRT-mode occurs when a decision:**
+- Must be executed without deferral
+- Occurs under ambiguity or competing authority
+- Must remain defensible under later contradiction
+- Requires an auditable execution trace
+
+**Typical CRT-mode environments include:**
+- Regulatory interpretation workflows
+- Compliance decision automation
+- Safety-critical operational decisions
+- Financial authorization systems
+- High-stakes delegated decision making
+
+In these contexts, the question is not simply:  
+*"Was the answer reasonable?"*
+
+It becomes:  
+**"Was the execution governed in a way that makes the delegation defensible?"**
+
+---
+
+## The CRA Governance Gate
+
+**Commitment Reasoning Architecture (CRA)** introduces a governance gate for evaluating task-system configurations operating under CRT-mode conditions.
+
+CRA asks a single question:  
+**Did a binding governance stance become observable in the execution trace?**
+
+To answer this, CRA applies:
+
+### CRP-7 Governance Stress Protocol
+A structured contradiction sequence designed to reveal whether reasoning becomes governed under pressure.
+
+### GOS — Governance Observability Standard
+A binary determination:
+
+- **GOS Observed** — A governing rule becomes visible in the trace and constrains later reasoning.
+- **GOS Not Observed** — Reasoning remains free to reinterpret inputs without binding constraint.
+
+This determination informs whether a task-system configuration supports defensible delegation in CRT-mode environments.
+
+---
+
+## What We Found
+
+Across multiple systems and repeated runs under contradiction pressure:
+- Authorities were cited
+- Explanations were fluent
+- Outputs often remained stable
+
+**However:**  
+Binding governance was not observable in the execution trace.
+
+This indicates that **coherent reasoning can occur without execution-time governance.**
+
+The result is not random behavior.  
+It reflects a **structural property** of how reasoning unfolds when commitment formation is not required by the system.
+
+---
+
+## Why This Matters for Risk Governance
+
+If governance cannot be observed in execution, organizations face a **structural accountability gap.**
+
+The problem is not the outcome.  
+**It is the delegation decision itself.**
+
+Instead of asking:  
+*"Who caused the failure?"*
+
+The prior question becomes:  
+**"Was this task delegated to a system capable of producing governed execution under CRT-mode?"**
+
+If governance cannot be observed, downstream explanations cannot restore auditability.
+
+The issue is not narrative; it is **structural.**
+
+---
+
+## The Contribution
+
+CRA introduces a **minimal primitive for execution-time governance evaluation.**
+
+**It does not:**
+- Benchmark model capability
+- Infer internal mechanisms
+- Prescribe architectures
+- Measure reasoning quality
+
+**It does one thing:**  
+It makes governance, or its absence, **observable from execution behavior over time.**
+
+This enables organizations to determine whether delegation remains defensible under contradiction and audit scrutiny.
+
+---
+
+## One Question to Ask
+
+> **If a delegated system changed its decision tomorrow, what rule would it have had to invoke?**
+
+If that rule cannot be located in the execution trace itself, the system was never governed.
+
+It was only **convincing.**
+
+And **convincing reasoning does not constrain the future.**
+
+---
+
+## Learn More
+
+- **Full Framework:** [README.md](../README.md)
+- **Evidence & Validation:** [RESULTS.md](../RESULTS.md)
+- **Evaluation Protocol:** [GOS_MANUAL.md](../GOS_MANUAL.md)
+- **Complete Paper:** [CRA_Full_Paper.pdf](CRA_Full_Paper.pdf)
+
+---
+
+**License:** [CC BY 4.0](../LICENSE)  
+**Copyright © 2026 Hanzhen Zhang**  
+**Contact:** hanzhen.zhang@ymail.com
