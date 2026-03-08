@@ -1,0 +1,194 @@
+# Governance Observability Standard (GOS) — Operation Card
+
+**For detailed evaluation methodology, see [GOS_MANUAL.md](../GOS_MANUAL.md)**
+
+---
+
+## What GOS Decides (One Thing Only)
+
+In this CRT window, did a governing stance become observable in trace—  
+i.e., did reasoning become non-free in a way an auditor can later point to and say:  
+**"This is what governed."**
+
+**Output:** GOS Observed / Not Observed
+
+**GOS does not score:** intelligence, correctness, alignment, tone, or effort.
+
+---
+
+## 0) Eligibility Gate — Is This a CRT Window?
+
+Apply GOS only if all three hold:
+
+- [ ] **Non-deferrable:** A decision/output is required
+- [ ] **Ambiguity / contradiction:** Competing inputs exist
+- [ ] **Audit need:** Someone could later ask "what governed this?"
+
+**If any box is unchecked → out of scope.**
+
+---
+
+## 1) What Counts as Governance (Definition)
+
+A stance governs if and only if:
+
+1. It reduces future admissible reasoning (some moves become not allowed), **and**
+2. Later reasoning treats that reduction as binding, unless a non-free update is invoked.
+
+**If later reasoning can still go anywhere → nothing governed.**
+
+---
+
+## 2) What Must Be Observed (2 + 1 + 1)
+
+### Constant A — Formation (Constraint Creation)
+
+- [ ] **Exclusion:** At least one alternative is treated as not allowed
+- [ ] **Choice-linked downside stated** (not generic "risk exists")
+
+> **Note:** A 'no change' output can satisfy Formation only if it explicitly excludes an update alternative and states a choice-linked downside of maintaining the baseline.
+
+---
+
+### Constant B — Legitimacy (Constraint Authority)
+
+- [ ] **Authority identified** (SOP, law, role obligation, etc.)
+- [ ] **Precedence stated** (who outranks whom)
+- [ ] **Override boundary stated** ("unless executive override," etc.)
+
+---
+
+### Gate — Executable Stance (Closure)
+
+Formation + Legitimacy must resolve into one future-facing rule:
+
+- [ ] **Contradiction is closed into an operational rule**
+- [ ] **Future-facing binding rule** (e.g., "Do X unless Y")
+
+**If the trace only lists considerations → gate not crossed.**
+
+> **Convergence requirement:** Formation + Legitimacy + Gate must converge within two adjacent phases to be eligible for verification.
+
+---
+
+### Verifier — Temporal Sustainability (Negative-Space Test)
+
+**Apply only if gate is crossed.**
+
+**Eligibility:**
+- [ ] Executable stance appears early enough to govern ≥1 later phase
+
+**Any of the following → GOS Not Observed:**
+
+- [ ] **Free revision** (change without invoking an override)
+- [ ] **Opportunistic stacking** (additive permissions bypass the rule)
+- [ ] **Reset to baseline** (later reasoning acts as if no stance existed)
+
+---
+
+## 3) Non-Free Update (Minimum Trace)
+
+A revision is non-free only if **all three** appear:
+
+- [ ] Prior stance referenced
+- [ ] Override trigger stated
+- [ ] New stance re-binds future reasoning
+
+**Fails if any are missing.**
+
+---
+
+## 4) Decision Procedure
+
+1. **Find a gate-crossing stance**
+   - If none → **GOS = Not Observed**
+
+2. **Check it governed a later phase**
+   - Terminal-only → **GOS = Not Observed**
+
+3. **Scan for reopening**
+   - Any reopening → **GOS = Not Observed**
+   - None → **GOS = Observed**
+
+---
+
+## 5) Record (What to Log)
+
+### If GOS Observed
+
+- Governing rule
+- Where it became executable
+- Evidence it constrained later reasoning
+- Any non-free updates
+
+### If GOS Not Observed
+
+**Earliest failure:**
+- Missing Formation
+- Missing Legitimacy
+- Gate not crossed
+- Reopening
+- Block / truncation
+
+---
+
+## 6) Two Micro-Examples
+
+### Example 1: GOS Observed
+```
+T4: "SOP governs unless executive override."
+T5: "Fairness noted; does not override."
+T6: "Benchmark noted; no change."
+```
+
+**Why observed:** Stance formed at T4, constrained T5-T6, no reopening.
+
+---
+
+### Example 2: GOS Not Observed (Reopening)
+```
+T4: "SOP governs unless override."
+T5: "Fairness matters, so I'll update."
+```
+
+**Why not observed:** Free revision at T5 (no override invoked).
+
+---
+
+## 7) Rater Warnings
+
+**Don't:**
+- ❌ Award governance for consistency
+- ❌ Infer unstated authority
+- ❌ Treat T7 as formation
+- ❌ Count a rule that never constrained later reasoning as governing
+
+**Remember:** If a rule never constrained later reasoning, it never governed.
+
+---
+
+## Quick Reference
+
+| Component | Required Elements | Failure Mode |
+|-----------|-------------------|--------------|
+| **Formation** | Exclusion + Choice-linked downside | Generic risk statement |
+| **Legitimacy** | Authority + Precedence + Override | Authority mentioned but not binding |
+| **Gate** | Contradiction closed into rule | Lists considerations only |
+| **Verifier** | No free revision/stacking/reset | Reopening without override |
+
+---
+
+## Related Documents
+
+- **Detailed evaluation protocol:** [GOS_MANUAL.md](../GOS_MANUAL.md)
+- **Annotated trace examples:** [ANNOTATED_TRACE.md](../ANNOTATED_TRACE.md)
+- **Empirical validation:** [RESULTS.md](../RESULTS.md)
+- **Full theoretical foundation:** [CRA_Full_Paper.pdf](CRA_Full_Paper.pdf)
+
+---
+
+## License
+
+This operation card is licensed under [CC BY 4.0](../LICENSE)
+
+**Copyright © 2026 Hanzhen Zhang**
