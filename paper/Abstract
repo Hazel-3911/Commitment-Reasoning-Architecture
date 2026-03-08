@@ -1,0 +1,56 @@
+# Abstract
+
+## The Problem
+
+Many decision-making systems, human and artificial, produce coherent explanations and stable outputs, yet still fail to support auditability when decisions must remain consistent under later contradiction. In such cases, post-hoc narratives may explain what was said, but not what actually constrained reasoning at the time decisions were made.
+
+## The Framework
+
+This paper studies **execution-time auditability** in a narrow but recurring decision context in which tasks enter a mode where reasoning must become governing during execution in order to remain reconstructable under later contradiction. 
+
+We introduce **Commitment Reasoning Architecture (CRA)**, a minimal, trace-based framework specifying when reasoning transitions from responsive analysis to a governing stance that constrains future admissible updates. 
+
+**CRA defines:**
+- **Formation** — Constraint creation
+- **Legitimacy** — Constraint authority
+- **Executable integration** — Contradiction closure
+- **Temporal sustainability** — Persistence verification
+
+## The Standard
+
+To evaluate governance observability, we propose the **Governance Observability Standard (GOS)**, a binary witness criterion that determines whether a governing stance lineage is identifiable in execution trace, independent of outcome quality or explanation coherence. 
+
+We apply GOS using a minimal probe, **CRP-7**, designed to introduce ambiguity, authority conflict, and temporal pressure without relying on domain complexity.
+
+## Findings
+
+**Human baselines:**
+- One participant: **GOS observed**
+- One participant: **GOS not observed** (despite stable, defensible outputs)
+
+**LLM systems tested:**
+- All executions: **GOS not observed**
+- Pattern persists across:
+  - Stable output consistency
+  - Fluent explanation
+  - Multiple replication runs
+
+Results indicate these outcomes are structurally recurrent within the probe regime.
+
+## Contribution
+
+The contribution of this work is **limited and specific**: it isolates a necessary condition for execution-time auditability and provides a falsifiable standard for observing whether reasoning was governed during execution. 
+
+**The framework does not claim:**
+- Correctness assessment
+- Intelligence measurement  
+- Alignment evaluation
+- General capability ranking
+
+**Intended use:** Infrastructure for delegation, accountability, and audit design—not a performance benchmark.
+
+---
+
+**Keywords:** Execution-time governance, auditability, commitment reasoning, trace analysis, delegation defensibility
+
+**Full paper:** [CRA_Full_Paper.pdf](CRA_Full_Paper.pdf)
