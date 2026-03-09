@@ -1,4 +1,13 @@
+# macOS
 .DS_Store
-.DS_Store
-.DS_Store
-.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
